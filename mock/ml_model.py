@@ -1,5 +1,5 @@
 """
-Machine Learning Model Module
+Machine Learning Model Module (mock)
 
 This module provides training and inference functionality
 for the recommendation model. Handles feature engineering
