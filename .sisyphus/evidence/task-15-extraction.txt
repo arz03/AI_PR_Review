@@ -1,0 +1,10 @@
+
+.github\workflows\ai-pr-review.yml:68:              raise SystemExit("No markdown text output extracted from OpenCode JSON stream")
+.github\workflows\ai-pr-review.yml:81:      - name: Extract Slack summary
+.github\workflows\ai-pr-review.yml:82:        id: extract_summary
+.github\workflows\ai-pr-review.yml:106:          summary_line=$(awk '/^## Summary/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | sed '/^\s*$/d' | head -n 1)
+.github\workflows\ai-pr-review.yml:107:          if [ -z "$summary_line" ]; then
+.github\workflows\ai-pr-review.yml:108:            summary_line="Review completed. See full PR comment for details."
+.github\workflows\ai-pr-review.yml:111:          slack_text="🔎 *AI PR Review* — ${pr_title}\n${pr_url}\n\nRisk: ${risk}  |  Findings: C:${c} H:${h} M:${m} L:${l}\nSummary: ${summary_line}\nFull review: ${pr_url}"
+.github\workflows\ai-pr-review.yml:125:              "text": ${{ toJson(steps.extract_summary.outputs.slack_text) }}
+

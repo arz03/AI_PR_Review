@@ -1,0 +1,5 @@
+
+.github\workflows\ai-pr-review.yml:120:        if: ${{ success() && secrets.SLACK_WEBHOOK_URL != '' }}
+.github\workflows\ai-pr-review.yml:128:          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+.github\workflows\ai-pr-review.yml:129:          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+

@@ -77,3 +77,53 @@ jobs:
           gh pr comment "${{ github.event.pull_request.number }}" \
             --repo "${{ github.repository }}" \
             --body-file pr-review.md
+
+      - name: Extract Slack summary
+        id: extract_summary
+        run: |
+          pr_title="${{ github.event.pull_request.title }}"
+          pr_url="${{ github.event.pull_request.html_url }}"
+
+          risk="🟢"
+          if grep -Eiq "overall risk.*critical|overall risk.*high|🔴" pr-review.md; then
+            risk="🔴"
+          elif grep -Eiq "overall risk.*medium|🟡" pr-review.md; then
+            risk="🟡"
+          fi
+
+          c=$(grep -Eic "\*\*Severity\*\*:\s*Critical|Severity:\s*Critical" pr-review.md || true)
+          h=$(grep -Eic "\*\*Severity\*\*:\s*High|Severity:\s*High" pr-review.md || true)
+          m=$(grep -Eic "\*\*Severity\*\*:\s*Medium|Severity:\s*Medium" pr-review.md || true)
+          l=$(grep -Eic "\*\*Severity\*\*:\s*Low|Severity:\s*Low" pr-review.md || true)
+
+          if [ "$c" -eq 0 ] && [ "$h" -eq 0 ] && [ "$m" -eq 0 ] && [ "$l" -eq 0 ]; then
+            c=$(awk '/^## Critical Findings/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | grep -c '^- \[ \]' || true)
+            h=0
+            m=$(awk '/^## Other Findings/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | grep -c '^- \[ \]' || true)
+            l=0
+          fi
+
+          summary_line=$(awk '/^## Summary/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | sed '/^\s*$/d' | head -n 1)
+          if [ -z "$summary_line" ]; then
+            summary_line="Review completed. See full PR comment for details."
+          fi
+
+          slack_text="🔎 *AI PR Review* — ${pr_title}\n${pr_url}\n\nRisk: ${risk}  |  Findings: C:${c} H:${h} M:${m} L:${l}\nSummary: ${summary_line}\nFull review: ${pr_url}"
+
+          {
+            echo "slack_text<<EOF"
+            echo "$slack_text"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack
+        if: ${{ success() && secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          payload: |
+            {
+              "text": ${{ toJson(steps.extract_summary.outputs.slack_text) }}
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
