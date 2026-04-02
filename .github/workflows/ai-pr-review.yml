@@ -26,7 +26,7 @@ jobs:
         run: |
           # Groq fallback (disabled for free-tier testing):
           # opencode run --agent pr-reviewer --model groq/openai/gpt-oss-120b "..." > pr-review.md 2>&1
-          opencode run --agent pr-reviewer --model opencode/qwen3.6-plus-free "
+          opencode run --pure --agent pr-reviewer --model opencode/qwen3.6-plus-free --format json "
           Review this pull request:
           - PR #${{ github.event.pull_request.number }}
           - URL: ${{ github.event.pull_request.html_url }}
@@ -34,8 +34,41 @@ jobs:
           - Head: ${{ github.head_ref }}
 
           Analyze the changes and provide a detailed code review following your configured review procedure.
-          Write the full review report to pr-review.md in markdown format.
-          " > pr-review.md 2>&1
+          Output only the final review report in markdown format.
+          " > pr-review.raw.jsonl
+
+      - name: Build clean markdown report
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import re
+
+          raw_path = pathlib.Path("pr-review.raw.jsonl")
+          md_path = pathlib.Path("pr-review.md")
+
+          chunks = []
+          for line in raw_path.read_text(encoding="utf-8").splitlines():
+              line = line.strip()
+              if not line:
+                  continue
+              try:
+                  event = json.loads(line)
+              except json.JSONDecodeError:
+                  continue
+              if event.get("type") == "text":
+                  text = event.get("part", {}).get("text", "")
+                  if text:
+                      # Strip ANSI escape sequences defensively
+                      text = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", text)
+                      chunks.append(text)
+
+          report = "\n\n".join(chunks).strip()
+          if not report:
+              raise SystemExit("No markdown text output extracted from OpenCode JSON stream")
+
+          md_path.write_text(report + "\n", encoding="utf-8")
+          PY
 
       - name: Post PR review comment
         env:
