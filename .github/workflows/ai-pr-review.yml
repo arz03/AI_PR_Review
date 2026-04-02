@@ -21,12 +21,15 @@ jobs:
         run: npm install -g opencode-ai
 
       - name: Run PR review agent
+        timeout-minutes: 7
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
+          set -euo pipefail
           # Groq fallback (disabled for free-tier testing):
           # opencode run --agent pr-reviewer --model groq/openai/gpt-oss-120b "..." > pr-review.md 2>&1
-          opencode run --pure --agent pr-reviewer --model opencode/qwen3.6-plus-free --format json "
+          echo "Starting OpenCode review run (model: opencode/qwen3.6-plus-free)"
+          if ! timeout 420s opencode run --pure --print-logs --log-level INFO --agent pr-reviewer --model opencode/qwen3.6-plus-free --format json "
           Review this pull request:
           - PR #${{ github.event.pull_request.number }}
           - URL: ${{ github.event.pull_request.html_url }}
@@ -35,7 +38,19 @@ jobs:
 
           Analyze the changes and provide a detailed code review following your configured review procedure.
           Output only the final review report in markdown format.
-          " > pr-review.raw.jsonl
+          " > pr-review.raw.jsonl 2> opencode-debug.log; then
+            code=$?
+            echo "OpenCode run failed (exit code: $code)"
+            echo "--- OpenCode debug log (last 120 lines) ---"
+            tail -n 120 opencode-debug.log || true
+            if [ "$code" -eq 124 ]; then
+              echo "OpenCode run timed out after 420 seconds"
+            fi
+            exit $code
+          fi
+
+          echo "OpenCode run completed successfully"
+          echo "Raw JSON event lines: $(wc -l < pr-review.raw.jsonl)"
 
       - name: Build clean markdown report
         run: |
@@ -69,6 +84,9 @@ jobs:
 
           md_path.write_text(report + "\n", encoding="utf-8")
           PY
+
+          echo "Markdown report generated"
+          wc -l pr-review.md
 
       - name: Post PR review comment
         env:
