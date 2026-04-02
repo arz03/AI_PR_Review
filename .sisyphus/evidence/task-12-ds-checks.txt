@@ -1,0 +1,8 @@
+
+.opencode\agents\pr-reviewer.md:76:- Data Science pipelines (ETL, feature engineering, model training)
+.opencode\agents\pr-reviewer.md:107:   - **Data pipeline integrity**: schema drift handling, null handling, idempotency, late/duplicate data behavior.
+.opencode\agents\pr-reviewer.md:108:   - **Model training/inference safety**: input validation, feature dimension checks, model version compatibility, pre/post-condition checks.
+.opencode\agents\pr-reviewer.md:109:   - **Experiment/reproducibility controls**: seed handling, deterministic settings, artifact/version tracking, dependency pinning.
+.opencode\agents\pr-reviewer.md:110:   - **SQL and analytics reliability**: parameterization, join/cardinality explosions, missing limits/timeouts, aggregation correctness.
+.opencode\agents\pr-reviewer.md:111:   - **Operational guardrails**: production config safety (debug/auth/cors/log level), PII handling in logs, rollback considerations.
+

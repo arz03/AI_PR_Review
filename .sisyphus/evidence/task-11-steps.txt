@@ -1,0 +1,17 @@
+
+.opencode\agents\pr-reviewer.md:90:1. **Load review scope**
+.opencode\agents\pr-reviewer.md:94:2. **Identify changed surface area**
+.opencode\agents\pr-reviewer.md:99:3. **Run core review checks per file group**
+.opencode\agents\pr-reviewer.md:106:4. **Run DS/AI/Analytics contextual checks (when relevant files exist)**
+.opencode\agents\pr-reviewer.md:113:5. **Prioritize and classify findings**
+.opencode\agents\pr-reviewer.md:118:6. **Build reviewer-facing output**
+.opencode\agents\pr-reviewer.md:123:7. **Generate Slack-ready summary payload**
+.opencode\agents\pr-reviewer.md:127:8. **Finalize with transparency**
+.opencode\agents\pr-reviewer.md:135:1. **PR Review Report** aligned to `docs/templates/pr-review-template.md`
+.opencode\agents\pr-reviewer.md:136:2. Findings represented with fields from `docs/templates/finding-schema.md`
+.opencode\agents\pr-reviewer.md:137:3. A compact **Slack Summary** aligned to `docs/templates/slack-summary-template.md`
+.opencode\agents\pr-reviewer.md:157:1. **No Code Modifications**: Agent reads files but cannot edit them
+.opencode\agents\pr-reviewer.md:158:2. **Read-Only Execution**: If commands are used for context, they must be read-only (no mutate/push/commit)
+.opencode\agents\pr-reviewer.md:159:3. **Single PR Scope**: Operates on one PR at a time
+.opencode\agents\pr-reviewer.md:160:4. **Read-Only Context**: File/bash usage restricted to discovery and analysis operations only
+

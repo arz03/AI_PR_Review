@@ -1,0 +1,25 @@
+
+.opencode\agents\pr-reviewer.md:2:description: "Automated read-only PR review agent focusing on security, logic errors, test coverage, performance, and API/schema changes in Data Science, AI, and Analytics pipelines."
+.opencode\agents\pr-reviewer.md:4:# Groq fallback (disabled for free-tier testing): model: groq/openai/gpt-oss-120b
+.opencode\agents\pr-reviewer.md:38:### 1. Security
+.opencode\agents\pr-reviewer.md:39:- Hardcoded credentials, API keys, secrets
+.opencode\agents\pr-reviewer.md:45:### 2. Logic Errors
+.opencode\agents\pr-reviewer.md:52:### 3. Test Coverage
+.opencode\agents\pr-reviewer.md:53:- Missing unit tests for new/changed logic
+.opencode\agents\pr-reviewer.md:54:- Untested edge cases
+.opencode\agents\pr-reviewer.md:55:- Integration test gaps
+.opencode\agents\pr-reviewer.md:59:### 4. Performance
+.opencode\agents\pr-reviewer.md:66:### 5. API/Schema Changes
+.opencode\agents\pr-reviewer.md:67:- Breaking changes to existing APIs
+.opencode\agents\pr-reviewer.md:68:- Database schema migration risks
+.opencode\agents\pr-reviewer.md:84:- APIs: FastAPI, Flask, gRPC
+.opencode\agents\pr-reviewer.md:97:   - Group files by type: app logic, config, SQL/data, dependencies, workflow/CI.
+.opencode\agents\pr-reviewer.md:100:   - **Security**: hardcoded secrets, injection paths, unsafe auth/cors/encryption settings, vulnerable dependencies.
+.opencode\agents\pr-reviewer.md:101:   - **Logic**: boundary cases, null/shape handling, failure paths, state/ordering bugs.
+.opencode\agents\pr-reviewer.md:102:   - **Performance**: N+1 access patterns, expensive loops, unbounded operations, large-memory transforms.
+.opencode\agents\pr-reviewer.md:103:   - **Testing**: missing tests for changed logic, missing edge-case coverage, weak assertions.
+.opencode\agents\pr-reviewer.md:104:   - **API/Schema**: breaking contracts, migration risks, backward compatibility.
+.opencode\agents\pr-reviewer.md:107:   - **Data pipeline integrity**: schema drift handling, null handling, idempotency, late/duplicate data behavior.
+.opencode\agents\pr-reviewer.md:114:   - Use the schema in `docs/templates/finding-schema.md`.
+.opencode\agents\pr-reviewer.md:136:2. Findings represented with fields from `docs/templates/finding-schema.md`
+

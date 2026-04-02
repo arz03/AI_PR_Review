@@ -1,0 +1,3 @@
+detected=29
+seeded=39
+detection_rate_percent=74.36
