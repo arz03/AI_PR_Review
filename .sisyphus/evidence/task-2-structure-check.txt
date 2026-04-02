@@ -1,0 +1,8 @@
+
+.opencode\agents\pr-reviewer.md:7:# PR Reviewer Agent
+.opencode\agents\pr-reviewer.md:11:**Permissions**: Read-only (no file modifications, no command execution)
+.opencode\agents\pr-reviewer.md:13:## Role
+.opencode\agents\pr-reviewer.md:23:## Capabilities
+.opencode\agents\pr-reviewer.md:31:## Review Focus Areas
+.opencode\agents\pr-reviewer.md:81:## Review Procedure
+

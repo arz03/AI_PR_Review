@@ -1,0 +1,3 @@
+Has schema: true 
+Has provider.groq: true 
+Model: groq/openai-gpt-oss-120b
