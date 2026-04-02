@@ -1,7 +1,11 @@
 ---
-name: pr-reviewer
-version: 1.0.0
 description: "Automated read-only PR review agent focusing on security, logic errors, test coverage, performance, and API/schema changes in Data Science, AI, and Analytics pipelines."
+mode: primary
+model: groq/openai-gpt-oss-120b
+permission:
+  edit: deny
+  bash:
+    "*": allow
 ---
 
 # PR Reviewer Agent
