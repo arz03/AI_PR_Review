@@ -1,0 +1,50 @@
+# Analytics Pipeline Configuration
+# Configuration for data warehouse ETL processes
+
+app:
+  name: analytics-pipeline
+  version: "1.0.0"
+  debug: true  # SEEDED ISSUE: Debug mode enabled in production config
+  environment: production
+  
+database:
+  host: localhost
+  port: 5432
+  username: analytics_user
+  # SEEDED ISSUE: Missing required 'database' field - should specify target database
+  password: "CHANGE_ME"  # SEEDED ISSUE: Placeholder password not replaced
+  pool_size: 10
+  
+api:
+  endpoint: https://api.example.com/v1
+  timeout: 30
+  retry_attempts: 3
+  # SEEDED ISSUE: Missing required 'rate_limit' field
+  api_key: "PLACEHOLDER_KEY_REPLACE_ME"  # SEEDED ISSUE: Sensitive key placeholder
+  
+security:
+  cors:
+    enabled: true
+    allow_all_origins: true  # SEEDED ISSUE: Insecure CORS - allows all origins
+    allowed_methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+    expose_headers: true
+  authentication:
+    enabled: false  # SEEDED ISSUE: Authentication disabled
+    provider: oauth2
+  encryption:
+    algorithm: none  # SEEED ISSUE: No encryption specified
+  
+logging:
+  level: DEBUG  # SEEDED ISSUE: Verbose logging in production
+  format: detailed
+  output: console
+  
+features:
+  cache_enabled: true
+  cache_ttl: 3600
+  # SEEDED ISSUE: Missing required 'backup_enabled' field

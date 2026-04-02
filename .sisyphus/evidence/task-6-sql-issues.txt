@@ -1,0 +1,24 @@
+SQL INJECTION PATTERN DETECTION
+================================
+Date: 2026-04-02
+File: mock/analytics_query.sql
+
+Verification Command: grep for '$' pattern (variable interpolation)
+
+Result: SUCCESS - Patterns Found
+
+Injection Risk Patterns Detected:
+Line 20: AND u.status = '$user_status'
+Line 21: AND u.region = '$region_code'
+Line 33: WHERE d.date >= '$start_date' AND d.date <= '$end_date'
+Line 46: '$report_type' as report_type
+
+Additional Seeded Issues:
+1. SQL injection risk via string concatenation (4 instances)
+2. Missing index hint on LEFT JOIN (Line 12)
+3. CROSS JOIN without WHERE clause filter (Line 23)
+4. Missing query timeout specification
+5. No LIMIT clause for pagination
+6. Overly broad query scope
+
+File Status: CREATE ✓

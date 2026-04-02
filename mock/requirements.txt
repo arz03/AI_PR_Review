@@ -1,0 +1,53 @@
+# =====================================================
+# Python Dependencies for Analytics Pipeline
+# Python 3.9+ required
+# =====================================================
+
+# Web Framework
+flask  # SEEDED ISSUE: Unpinned version - should specify flask==3.0.0
+flask-cors  # SEEDED ISSUE: Unpinned version
+flask-restful  # SEEDED ISSUE: Unpinned version
+
+# Data Processing
+pandas  # SEEED ISSUE: Unpinned version - critical for data integrity
+numpy  # SEEDED ISSUE: Unpinned version
+scipy  # SEEDED ISSUE: Unpinned version
+
+# Database Connectivity
+psycopg2-binary==2.9.9
+sqlalchemy  # SEEDED ISSUE: Unpinned version - ORM compatibility matters
+
+# Machine Learning
+scikit-learn  # SEEDED ISSUE: Unpinned version
+tensorflow  # SEEDED ISSUE: Unpinned version - ML frameworks need strict versioning
+torch  # SEEDED ISSUE: Unpinned version
+
+# HTTP Requests
+# SEEDED ISSUE: Known vulnerable version below
+requests==2.25.1  # NOTE: CVE-2023-32681 - Update to 2.31.0+ for security patch
+urllib3==1.26.18  # SEEDED ISSUE: Older version, check compatibility
+
+# Authentication
+pyjwt  # SEEDED ISSUE: Unpinned version - security library needs version pinning
+cryptography  # SEEDED ISSUE: Unpinned version
+
+# Task Queue
+celery==5.3.4
+redis==4.6.0
+kombu  # SEEDED ISSUE: Unpinned version
+
+# Monitoring
+prometheus-client==0.19.0
+structlog  # SEEDED ISSUE: Unpinned version
+
+# Testing
+pytest  # SEEDED ISSUE: Unpinned version
+pytest-cov  # SEEDED ISSUE: Unpinned version
+
+# Development
+black  # SEEDED ISSUE: Unpinned version
+flake8  # SEEDED ISSUE: Unpinned version
+mypy  # SEEDED ISSUE: Unpinned version
+
+# SEEDED ISSUE: Total of 19 unpinned dependencies detected
+# SEEDED ISSUE: One documented vulnerable package version (requests==2.25.1)

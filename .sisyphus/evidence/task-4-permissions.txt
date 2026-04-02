@@ -1,0 +1,9 @@
+
+> .github\workflows\ai-pr-review.yml:10:    permissions:
+  .github\workflows\ai-pr-review.yml:11:      contents: read
+  .github\workflows\ai-pr-review.yml:12:      pull-requests: write
+  .github\workflows\ai-pr-review.yml:13:
+  .github\workflows\ai-pr-review.yml:14:    steps:
+  .github\workflows\ai-pr-review.yml:15:      - name: Checkout repository
+
+

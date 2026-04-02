@@ -1,0 +1,33 @@
+UNPINNED DEPENDENCY DETECTION
+==============================
+Date: 2026-04-02
+File: mock/requirements.txt
+
+Verification Command: grep for lines starting with letters (package names)
+
+Result: SUCCESS - Unpinned Dependencies Found
+
+Pinned Dependencies (with ==):
+- psycopg2-binary==2.9.9
+- requests==2.25.1 (DOCUMENTED VULNERABLE - CVE-2023-32681)
+- urllib3==1.26.18
+- celery==5.3.4
+- redis==4.6.0
+- prometheus-client==0.19.0
+
+Unpinned Dependencies (without ==):
+Web Framework: flask, flask-cors, flask-restful
+Data Processing: pandas, numpy, scipy
+Database: sqlalchemy
+ML Frameworks: scikit-learn, tensorflow, torch
+Authentication: pyjwt, cryptography
+Task Queue: kombu
+Logging: structlog
+Testing: pytest, pytest-cov
+Development: black, flake8, mypy
+
+Total Unpinned: 19 packages
+Total Pinned: 6 packages
+Vulnerable Package: requests==2.25.1 (documented CVE)
+
+File Status: CREATE ✓

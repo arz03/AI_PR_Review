@@ -1,0 +1,15 @@
+=== SQL Injection Pattern Verification ===
+
+Pattern Found:
+  mock/data_pipeline.py:47: query = f\
+SELECT
+*
+FROM
+users
+WHERE
+user_id
+=
+{user_id}
+\  # Security Issue: SQL injection
+
+RESULT: SQL injection vulnerability confirmed present (string formatting in SQL)

@@ -1,0 +1,40 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.0
+        with:
+          fetch-depth: 0
+
+      - name: Install OpenCode CLI
+        run: npm install -g opencode-ai
+
+      - name: Run PR review agent
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          opencode run-agent pr-reviewer \
+            --input "pr_url=${{ github.event.pull_request.html_url }}" \
+            --input "pr_number=${{ github.event.pull_request.number }}" \
+            --input "base_ref=${{ github.base_ref }}" \
+            --input "head_ref=${{ github.head_ref }}" \
+            --output pr-review.md
+
+      - name: Post PR review comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body-file pr-review.md

@@ -1,0 +1,7 @@
+=== Seeded Issues Verification ===
+
+Hardcoded Password Found:
+  mock/data_pipeline.py:19: DB_PASSWORD = \
+admin123\  # Security Issue: Hardcoded password
+
+RESULT: Security issue (hardcoded credential) confirmed present
