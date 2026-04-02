@@ -1,7 +1,8 @@
 ---
 description: "Automated read-only PR review agent focusing on security, logic errors, test coverage, performance, and API/schema changes in Data Science, AI, and Analytics pipelines."
 mode: primary
-model: groq/openai-gpt-oss-120b
+# Groq fallback (disabled for free-tier testing): model: groq/openai/gpt-oss-120b
+model: opencode/qwen3.6-plus-free
 permission:
   edit: deny
   bash:
