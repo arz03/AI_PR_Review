@@ -1,0 +1,66 @@
+OPENCODE CLI COMMAND SYNTAX VERIFICATION
+=========================================
+Timestamp: 2026-04-02 14:25:51
+File: .github/workflows/ai-pr-review.yml
+
+Original Command (INCORRECT):
+-----------------------------
+opencode run-agent pr-reviewer \
+  --input "pr_url=${{ github.event.pull_request.html_url }}" \
+  --input "pr_number=${{ github.event.pull_request.number }}" \
+  --input "base_ref=${{ github.base_ref }}" \
+  --input "head_ref=${{ github.head_ref }}" \
+  --output pr-review.md
+
+Issues Found:
+1. ❌ 'run-agent' is not a valid OpenCode CLI command
+2. ❌ --input flag does not exist in OpenCode CLI
+3. ❌ --output flag does not exist in OpenCode CLI run command
+
+Corrected Command (VERIFIED):
+-----------------------------
+opencode run --agent pr-reviewer "
+Review this pull request:
+- PR #${{ github.event.pull_request.number }}
+- URL: ${{ github.event.pull_request.html_url }}
+- Base: ${{ github.base_ref }}
+- Head: ${{ github.head_ref }}
+
+Analyze the changes and provide a detailed code review following your configured review procedure.
+Write the full review report to pr-review.md in markdown format.
+" > pr-review.md 2>&1
+
+Changes Made:
+1. ✓ Command: 'run-agent' → 'run --agent'
+2. ✓ Inputs: Replaced --input flags with embedded prompt string
+3. ✓ Output: Replaced --output flag with shell redirection '> pr-review.md 2>&1'
+
+Official OpenCode CLI Documentation Reference:
+===============================================
+
+Command: opencode run
+
+Usage: opencode run [options] "<prompt>"
+
+Options:
+  --agent <name>           Specify which agent to use
+  --model <provider/model> Override default model
+  --format <default|json>  Output format
+  --continue                Continue existing session
+  --session <id>           Resume specific session ID
+  --file <path>            Attach file to context
+
+Invalid Flags (NOT supported):
+  ❌ --input (does not exist)
+  ❌ --output (does not exist)
+
+Output Capture Methods:
+1. Shell redirection: opencode run --agent foo "prompt" > output.md
+2. JSON format: opencode run --agent foo "prompt" --format json > output.json
+
+Evidence Sources:
+- Background explore agent (bg_039d4bdc): Confirmed correct syntax
+- Background librarian agent (bg_71cfeaf6): Verified official CLI docs
+- Official docs: https://opencode.ai/docs/cli/
+
+Status: SYNTAX CORRECTED AND VERIFIED ✓

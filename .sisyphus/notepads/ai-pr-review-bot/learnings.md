@@ -315,3 +315,51 @@ Initial plan execution started. Key conventions to maintain:
 
 **Files Ready For**: AI PR review bot testing (all issues detectable via static analysis)
 
+## [2026-04-02 14:25:51] Task 7 Issue Resolution - OpenCode CLI Syntax Correction
+
+**Problem Identified**: Workflow used non-existent `opencode run-agent` command with unsupported `--input` and `--output` flags.
+
+**Root Cause**: Initial workflow implementation used incorrect CLI syntax not matching official OpenCode CLI documentation.
+
+**Correct OpenCode CLI Syntax**:
+```bash
+opencode run --agent <agent-name> "prompt text" > output-file.md
+```
+
+**Key Corrections Made**:
+1. Command: `opencode run-agent` → `opencode run --agent`
+2. Inputs: Removed --input flags → Embedded PR context in prompt string
+3. Output: Removed --output flag → Used shell redirection `> pr-review.md 2>&1`
+
+**Official CLI Flags** (from https://opencode.ai/docs/cli/):
+- `--agent <name>`: Specify which agent to use
+- `--model <provider/model>`: Override model
+- `--format <default|json>`: Output format
+- `--continue`, `--session`: Session management
+- NO `--input` or `--output` flags exist
+
+**Verification Method**:
+- YAML syntax check with Python yaml.safe_load
+- Command structure verified against official docs
+
+**Files Modified**:
+- `.github/workflows/ai-pr-review.yml` (lines 23-36)
+
+**Final Working Command Structure**:
+```yaml
+- name: Run PR review agent
+  env:
+    GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  run: |
+    opencode run --agent pr-reviewer "
+    Review this pull request:
+    - PR #${{ github.event.pull_request.number }}
+    - URL: ${{ github.event.pull_request.html_url }}
+    - Base: ${{ github.base_ref }}
+    - Head: ${{ github.head_ref }}
+
+    Analyze the changes and provide a detailed code review following your configured review procedure.
+    Write the full review report to pr-review.md in markdown format.
+    " > pr-review.md 2>&1
+```
+
