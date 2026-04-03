@@ -168,7 +168,18 @@ jobs:
             summary_line="Review completed. See full PR comment for details."
           fi
 
-          slack_text="🔎 *AI PR Review* — ${pr_title}\n${pr_url}\n\nRisk: ${risk}  |  Findings: C:${c} H:${h} M:${m} L:${l}\nSummary: ${summary_line}\nFull review: ${pr_url}"
+          # Normalize markdown-heavy summary text for Slack readability.
+          summary_line=$(echo "$summary_line" | sed -E 's/[`*_#>//-]+/ /g; s/[[:space:]]+/ /g; s/^\s+|\s+$//g')
+
+          slack_text=$(cat <<EOF
+          🔎 *AI PR Review* — ${pr_title}
+          ${pr_url}
+
+          Risk: ${risk}  |  Findings: C:${c} H:${h} M:${m} L:${l}
+          Summary: ${summary_line}
+          Full review: ${pr_url}
+          EOF
+          )
 
           {
             echo "slack_text<<EOF"
