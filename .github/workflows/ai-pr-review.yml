@@ -21,11 +21,10 @@ jobs:
         run: npm install -g opencode-ai
 
       - name: Run PR review agent
-        timeout-minutes: 7
+        timeout-minutes: 8
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX: "6000"
+          OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX: "5000"
         run: |
           set -euo pipefail
           # Groq fallback (disabled for free-tier testing):
@@ -35,7 +34,7 @@ jobs:
             local out_file="$2"
             local log_file="$3"
 
-            timeout 240s opencode run --pure --print-logs --log-level INFO --agent pr-reviewer --model "$model" --format json "
+            timeout 180s opencode run --pure --print-logs --log-level INFO --agent pr-reviewer --model "$model" --format json "
           Review this pull request:
           - PR #${{ github.event.pull_request.number }}
           - URL: ${{ github.event.pull_request.html_url }}
@@ -43,6 +42,9 @@ jobs:
           - Head: ${{ github.head_ref }}
 
           Analyze the changes and provide a detailed code review following your configured review procedure.
+          Do not execute bash commands. Do not call gh.
+          Use only repository files already available in the workspace.
+          Keep output concise and complete in one pass.
           Output only the final review report in markdown format.
             " > "$out_file" 2> "$log_file"
           }
@@ -58,20 +60,25 @@ jobs:
             echo "--- Primary debug log (last 120 lines) ---"
             tail -n 120 opencode-debug.log || true
 
-            echo "Retrying with Groq fallback model: groq/openai/gpt-oss-20b"
-            set +e
-            run_review "groq/openai/gpt-oss-20b" "pr-review.raw.jsonl" "opencode-debug-fallback.log"
-            fallback_code=$?
-            set -e
+            if [ "$code" -eq 124 ] || grep -Eiq "rate limit|429|temporarily unavailable|overloaded|timeout" opencode-debug.log; then
+              echo "Retrying with Groq fallback model: groq/openai/gpt-oss-20b"
+              set +e
+              run_review "groq/openai/gpt-oss-20b" "pr-review.raw.jsonl" "opencode-debug-fallback.log"
+              fallback_code=$?
+              set -e
 
-            if [ "$fallback_code" -ne 0 ]; then
-              echo "Fallback model also failed (exit code: $fallback_code)"
-              echo "--- Fallback debug log (last 120 lines) ---"
-              tail -n 120 opencode-debug-fallback.log || true
-              if [ "$code" -eq 124 ] || [ "$fallback_code" -eq 124 ]; then
-                echo "OpenCode run timed out during primary or fallback execution"
+              if [ "$fallback_code" -ne 0 ]; then
+                echo "Fallback model also failed (exit code: $fallback_code)"
+                echo "--- Fallback debug log (last 120 lines) ---"
+                tail -n 120 opencode-debug-fallback.log || true
+                if [ "$code" -eq 124 ] || [ "$fallback_code" -eq 124 ]; then
+                  echo "OpenCode run timed out during primary or fallback execution"
+                fi
+                exit "$fallback_code"
               fi
-              exit "$fallback_code"
+            else
+              echo "Primary failure was non-transient; skipping fallback retry"
+              exit "$code"
             fi
           fi
 

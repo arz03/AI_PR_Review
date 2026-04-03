@@ -6,7 +6,8 @@ model: opencode/qwen3.6-plus-free
 permission:
   edit: deny
   bash:
-    "*": allow
+    "*": deny
+max-steps: 6
 ---
 
 # PR Reviewer Agent
