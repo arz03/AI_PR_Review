@@ -266,52 +266,79 @@ jobs:
       - name: Extract Slack summary
         id: extract_summary
         if: ${{ always() }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          pr_title="${{ github.event.pull_request.title }}"
-          pr_url="${{ github.event.pull_request.html_url }}"
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
 
-          risk="🟢"
-          if grep -Eiq "overall risk.*critical|overall risk.*high|🔴" pr-review.md; then
-            risk="🔴"
-          elif grep -Eiq "overall risk.*medium|🟡" pr-review.md; then
-            risk="🟡"
-          fi
+          pr_title = os.environ.get("PR_TITLE", "PR Review")
+          pr_url = os.environ.get("PR_URL", "")
+          report_path = Path("pr-review.md")
+          text = report_path.read_text(encoding="utf-8") if report_path.exists() else ""
 
-          c=$(grep -Eic "\*\*Severity\*\*:\s*Critical|Severity:\s*Critical" pr-review.md || true)
-          h=$(grep -Eic "\*\*Severity\*\*:\s*High|Severity:\s*High" pr-review.md || true)
-          m=$(grep -Eic "\*\*Severity\*\*:\s*Medium|Severity:\s*Medium" pr-review.md || true)
-          l=$(grep -Eic "\*\*Severity\*\*:\s*Low|Severity:\s*Low" pr-review.md || true)
+          def clean(value: str) -> str:
+              value = re.sub(r"[`*_>#\[\]\(\)]", "", value)
+              value = re.sub(r"\s+", " ", value).strip(" -:\t")
+              return value
 
-          if [ "$c" -eq 0 ] && [ "$h" -eq 0 ] && [ "$m" -eq 0 ] && [ "$l" -eq 0 ]; then
-            c=$(awk '/^## Critical Findings/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | grep -c '^- \[ \]' || true)
-            h=0
-            m=$(awk '/^## Other Findings/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | grep -c '^- \[ \]' || true)
-            l=0
-          fi
+          # Risk extraction
+          risk_label = "Medium"
+          m_risk = re.search(r"(?im)^\s*-\s*\*\*Overall Risk\*\*:\s*([^\n]+)", text)
+          if m_risk:
+              raw = m_risk.group(1).strip()
+              if re.search(r"critical|high", raw, re.I):
+                  risk_label = "Critical"
+              elif re.search(r"medium", raw, re.I):
+                  risk_label = "Medium"
+              elif re.search(r"low", raw, re.I):
+                  risk_label = "Low"
+          risk_emoji = "🔴" if risk_label in ("Critical", "High") else ("🟡" if risk_label == "Medium" else "🟢")
 
-          summary_line=$(awk '/^## Summary/{flag=1;next}/^## /{if(flag){exit}}flag' pr-review.md | sed '/^\s*$/d' | head -n 1)
-          if [ -z "$summary_line" ]; then
-            summary_line="Review completed. See full PR comment for details."
-          fi
+          # Severity counts (case-insensitive)
+          counts = {"critical": 0, "high": 0, "medium": 0}
+          for sev in re.findall(r"(?i)severity\*\*?:\s*([a-z]+)|severity:\s*([a-z]+)", text):
+              s = (sev[0] or sev[1] or "").lower()
+              if s in counts:
+                  counts[s] += 1
 
-          # Normalize markdown-heavy summary text for Slack readability.
-          summary_line=$(echo "$summary_line" | sed -E 's/[`*_#>//-]+/ /g; s/[[:space:]]+/ /g; s/^\s+|\s+$//g')
+          # Fallback count estimation from sections if explicit severity tags absent
+          if sum(counts.values()) == 0:
+              crit_block = re.search(r"(?is)^##\s*Critical Findings.*?(?=^##\s|\Z)", text, re.M)
+              other_block = re.search(r"(?is)^##\s*Other Findings.*?(?=^##\s|\Z)", text, re.M)
+              counts["critical"] = len(re.findall(r"(?m)^\s*- \[ \]", crit_block.group(0) if crit_block else ""))
+              counts["high"] = 0
+              counts["medium"] = len(re.findall(r"(?m)^\s*- \[ \]", other_block.group(0) if other_block else ""))
 
-          slack_text=$(cat <<EOF
-          🔎 *AI PR Review* — ${pr_title}
-          ${pr_url}
+          # Summary extraction: prefer Verdict, then first Key Theme bullet
+          summary = "Review completed. See full PR comment for details."
+          m_verdict = re.search(r"(?im)^\s*-\s*\*\*Verdict\*\*:\s*(.+)$", text)
+          if m_verdict:
+              summary = clean(m_verdict.group(1))
+          else:
+              m_theme = re.search(r"(?is)^\s*-\s*\*\*Key Themes\*\*:\s*(.*?)\n\s*-\s*\*\*Verdict\*\*:", text, re.M)
+              if m_theme:
+                  theme_lines = re.findall(r"(?m)^\s*-\s*(.+)$", m_theme.group(1))
+                  if theme_lines:
+                      summary = clean(theme_lines[0])
 
-          Risk: ${risk}  |  Findings: Critical:${c} High:${h} Medium:${m}
-          Summary: ${summary_line}
-          Full review: ${pr_url}
-          EOF
+          slack_text = (
+              f"🔎 *AI PR Review* — {pr_title}\n"
+              f"{pr_url}\n\n"
+              f"*Risk:* {risk_emoji} {risk_label}\n"
+              f"*Findings:* Critical:{counts['critical']} • High:{counts['high']} • Medium:{counts['medium']}\n"
+              f"*Summary:* {summary}\n"
+              f"*Full review:* {pr_url}"
           )
 
-          {
-            echo "slack_text<<EOF"
-            echo "$slack_text"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write("slack_text<<EOF\n")
+              out.write(slack_text + "\n")
+              out.write("EOF\n")
+          PY
 
       - name: Notify Slack
         if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
