@@ -1,0 +1,19 @@
+
+.github\workflows\ai-pr-review.yml:27:          changed_files="${{ github.event.pull_request.changed_files }}"
+.github\workflows\ai-pr-review.yml:28:          skip_review="false"
+.github\workflows\ai-pr-review.yml:31:          if [ "$changed_files" -ge 50 ]; then
+.github\workflows\ai-pr-review.yml:32:            skip_review="true"
+.github\workflows\ai-pr-review.yml:33:            size_note="⚠️ PR size is ${changed_files} files (>=50). Full AI review skipped to avoid token/time explosion."
+.github\workflows\ai-pr-review.yml:34:          elif [ "$changed_files" -ge 20 ]; then
+.github\workflows\ai-pr-review.yml:35:            size_note="⚠️ PR size is ${changed_files} files (>=20). Review quality may be reduced; prioritize critical findings."
+.github\workflows\ai-pr-review.yml:39:            echo "skip_review=${skip_review}"
+.github\workflows\ai-pr-review.yml:40:            echo "changed_files=${changed_files}"
+.github\workflows\ai-pr-review.yml:51:        if: ${{ steps.pr_size.outputs.skip_review != 'true' }}
+.github\workflows\ai-pr-review.yml:118:        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.run_review.outcome == 'success' }}
+.github\workflows\ai-pr-review.yml:168:          if [ "${{ steps.pr_size.outputs.skip_review }}" = "true" ]; then
+.github\workflows\ai-pr-review.yml:175:  - Review skipped due to PR size policy.
+.github\workflows\ai-pr-review.yml:176:  - Changed files: ${{ steps.pr_size.outputs.changed_files }}
+.github\workflows\ai-pr-review.yml:186:- PR metadata and size policy gate.
+.github\workflows\ai-pr-review.yml:192:- Automated review intentionally skipped at >=50 changed files.
+.github\workflows\ai-pr-review.yml:223:            printf "\n## Size Policy Note\n- %s\n" "${{ steps.pr_size.outputs.size_note }}" >> pr-review.md
+

@@ -1,0 +1,11 @@
+
+.github\workflows\ai-pr-review.yml:53:        continue-on-error: true
+.github\workflows\ai-pr-review.yml:119:        continue-on-error: true
+.github\workflows\ai-pr-review.yml:164:        if: ${{ always() }}
+.github\workflows\ai-pr-review.yml:209:- [ ] AI review unavailable due to transient execution error/timeout.
+.github\workflows\ai-pr-review.yml:218:- No secrets are included in this fallback report.
+.github\workflows\ai-pr-review.yml:227:        if: ${{ always() }}
+.github\workflows\ai-pr-review.yml:246:        if: ${{ always() }}
+.github\workflows\ai-pr-review.yml:295:        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+.github\workflows\ai-pr-review.yml:307:        if: ${{ always() }}
+

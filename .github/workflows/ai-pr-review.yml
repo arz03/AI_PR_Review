@@ -15,15 +15,42 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.0
+        # v4.2.0
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
         with:
           fetch-depth: 0
+
+      - name: Evaluate PR size limits
+        id: pr_size
+        run: |
+          set -euo pipefail
+          changed_files="${{ github.event.pull_request.changed_files }}"
+          skip_review="false"
+          size_note=""
+
+          if [ "$changed_files" -ge 50 ]; then
+            skip_review="true"
+            size_note="⚠️ PR size is ${changed_files} files (>=50). Full AI review skipped to avoid token/time explosion."
+          elif [ "$changed_files" -ge 20 ]; then
+            size_note="⚠️ PR size is ${changed_files} files (>=20). Review quality may be reduced; prioritize critical findings."
+          fi
+
+          {
+            echo "skip_review=${skip_review}"
+            echo "changed_files=${changed_files}"
+            echo "size_note<<EOF"
+            echo "$size_note"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Install OpenCode CLI
         run: npm install -g opencode-ai
 
       - name: Run PR review agent
+        id: run_review
+        if: ${{ steps.pr_size.outputs.skip_review != 'true' }}
         timeout-minutes: 7
+        continue-on-error: true
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,6 +114,9 @@ jobs:
           echo "Raw JSON event lines: $(wc -l < pr-review.raw.jsonl)"
 
       - name: Build clean markdown report
+        id: build_report
+        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.run_review.outcome == 'success' }}
+        continue-on-error: true
         run: |
           python - <<'PY'
           import json
@@ -130,16 +160,98 @@ jobs:
           echo "Markdown report generated"
           wc -l pr-review.md
 
-      - name: Post PR review comment
+      - name: Ensure review report exists
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+
+          if [ "${{ steps.pr_size.outputs.skip_review }}" = "true" ]; then
+            python - <<'PY'
+            import textwrap
+            report = textwrap.dedent("""\
+            ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
+
+            ## Summary
+            - **Overall Risk**: 🟡 Medium
+            - **Key Themes**:
+              - Review skipped due to PR size policy.
+              - Changed files: ${{ steps.pr_size.outputs.changed_files }}
+            - **Verdict**: Manual review required due to large PR size.
+
+            ## Critical Findings (critical/high)
+            - None (automated review skipped)
+
+            ## Other Findings (medium/low/info)
+            - [ ] PR exceeds automated review size threshold.
+
+            ## What Was Checked
+            - PR metadata and size policy gate.
+
+            ## Reviewer Focus
+            - Split PR into smaller chunks or provide targeted scope for review.
+
+            ## Agent Notes
+            - Automated review intentionally skipped at >=50 changed files.
+            """)
+            open("pr-review.md", "w", encoding="utf-8").write(report)
+            PY
+          elif [ "${{ steps.run_review.outcome }}" != "success" ] || [ "${{ steps.build_report.outcome }}" = "failure" ] || [ ! -s pr-review.md ]; then
+            python - <<'PY'
+            import textwrap
+            report = textwrap.dedent("""\
+            ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
+
+            ## Summary
+            - **Overall Risk**: 🟡 Medium
+            - **Key Themes**:
+              - Automated review was unavailable for this run.
+              - Fallback diagnostics were captured as workflow artifacts.
+            - **Verdict**: Manual review recommended for this run.
+
+            ## Critical Findings (critical/high)
+            - None (review execution failed)
+
+            ## Other Findings (medium/low/info)
+            - [ ] AI review unavailable due to transient execution error/timeout.
+
+            ## What Was Checked
+            - Workflow execution state and diagnostic logs.
+
+            ## Reviewer Focus
+            - Check artifacts: `opencode-debug.log`, `opencode-debug-fallback.log`, and rerun if needed.
+
+            ## Agent Notes
+            - No secrets are included in this fallback report.
+            """)
+            open("pr-review.md", "w", encoding="utf-8").write(report)
+            PY
+          fi
+
+          if [ -n "${{ steps.pr_size.outputs.size_note }}" ]; then
+            printf "\n## Size Policy Note\n- %s\n" "${{ steps.pr_size.outputs.size_note }}" >> pr-review.md
+          fi
+
+      - name: Post or update PR review comment
+        if: ${{ always() }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          {
+            echo "<!-- ai-pr-review -->"
+            echo "_Last updated: $(date -u +'%Y-%m-%dT%H:%M:%SZ')_"
+            echo
+            cat pr-review.md
+          } > comment-body.md
+
           gh pr comment "${{ github.event.pull_request.number }}" \
             --repo "${{ github.repository }}" \
-            --body-file pr-review.md
+            --body-file comment-body.md \
+            --edit-last \
+            --create-if-none
 
       - name: Extract Slack summary
         id: extract_summary
+        if: ${{ always() }}
         run: |
           pr_title="${{ github.event.pull_request.title }}"
           pr_url="${{ github.event.pull_request.html_url }}"
@@ -175,7 +287,7 @@ jobs:
           🔎 *AI PR Review* — ${pr_title}
           ${pr_url}
 
-          Risk: ${risk}  |  Findings: C:${c} H:${h} M:${m} L:${l}
+          Risk: ${risk}  |  Findings: Critical:${c} High:${h} Medium:${m}
           Summary: ${summary_line}
           Full review: ${pr_url}
           EOF
@@ -188,8 +300,9 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Notify Slack
-        if: ${{ success() && env.SLACK_WEBHOOK_URL != '' }}
-        uses: slackapi/slack-github-action@v2.1.1
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+        # v2.1.1
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -200,7 +313,8 @@ jobs:
 
       - name: Upload review artifacts
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4.3.4
+        # v4.3.4
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
         with:
           name: ai-pr-review-artifacts-pr-${{ github.event.pull_request.number }}
           retention-days: 14
