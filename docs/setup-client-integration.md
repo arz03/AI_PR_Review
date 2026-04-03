@@ -58,6 +58,20 @@ OpenCode supports OpenAI-compatible providers via `@ai-sdk/openai-compatible` wi
 
 > If your provider model ID is different, rename the `client-model` key accordingly.
 
+### 2.3 Base URL Requirements (Critical)
+
+`CLIENT_LLM_BASE_URL` must be the OpenAI-compatible API root expected by your provider. In practice, this is often a URL ending with `/v1`.
+
+Rules:
+- Use full HTTPS URL (`https://...`) and avoid trailing spaces.
+- Do **not** include endpoint suffixes like `/chat/completions`; OpenCode/SDK appends paths internally.
+- Keep the value identical between local testing and GitHub Actions to avoid environment drift.
+
+Examples:
+- ✅ `https://api.groq.com/openai/v1`
+- ✅ `https://<client-gateway>/v1`
+- ❌ `https://<client-gateway>/v1/chat/completions`
+
 ## 3) Selecting Runtime Model in Workflow
 
 The workflow chooses model in `run_review()` calls, not in docs commands.
@@ -78,7 +92,7 @@ Optional fallback can similarly be changed to your internal provider model.
 
 ## 4) GitHub Secrets
 
-Set in **Settings → Secrets and variables → Actions → Repository secrets**.
+Set in **Settings → Secrets and variables → Actions** (open the **Secrets** tab, then click **New repository secret**).
 
 Required:
 - `SLACK_WEBHOOK_URL`
@@ -88,11 +102,11 @@ Provider-specific (as used):
 - `CLIENT_LLM_API_KEY` (if using client provider)
 
 Also provide:
-- `CLIENT_LLM_BASE_URL` (as secret or variable based on policy)
+- `CLIENT_LLM_BASE_URL` (recommended as **repository variable** because it is not typically secret; store as secret only if internal policy classifies endpoints as sensitive)
 
 ## 5) GitHub Variables
 
-Set in **Settings → Secrets and variables → Actions → Repository variables**:
+Set in **Settings → Secrets and variables → Actions** (open the **Variables** tab):
 - `PR_REVIEW_WARN_FILES` (default `20`)
 - `PR_REVIEW_SKIP_FILES` (default `50`)
 
@@ -116,7 +130,45 @@ Suggested production starting point:
    - `pr-review.raw.jsonl`
    - `opencode-debug.log`
 
-## 8) Security and Operational Notes
+## 8) Severity Counts Policy (Comment + Slack)
+
+The workflow normalizes findings to these counts only:
+- `Critical`
+- `High`
+- `Medium`
+
+`Low` and `Info` are still allowed in narrative findings, but are **not** included in Slack count totals. This keeps alerts concise and triage-oriented.
+
+## 9) Secrets vs Variables Matrix
+
+| Name | Type | Required | Purpose |
+|---|---|---:|---|
+| `SLACK_WEBHOOK_URL` | Secret | Yes | Sends Slack summary |
+| `GROQ_API_KEY` | Secret | Conditional | Needed only when Groq route is used |
+| `CLIENT_LLM_API_KEY` | Secret | Conditional | Needed only for client OpenAI-compatible provider |
+| `CLIENT_LLM_BASE_URL` | Variable (recommended) | Conditional | OpenAI-compatible API base URL |
+| `PR_REVIEW_WARN_FILES` | Variable | No | Warn threshold for changed files |
+| `PR_REVIEW_SKIP_FILES` | Variable | No | Skip threshold for very large PRs |
+
+## 10) Troubleshooting (Short)
+
+1. **AI step skipped unexpectedly**
+   - Check PR changed file count vs `PR_REVIEW_SKIP_FILES`.
+   - Check whether PR is from a fork (`fork` safety mode skips secret-dependent review).
+
+2. **Provider auth/model errors**
+   - Confirm required API key secret exists and is non-empty.
+   - Verify model route matches provider naming (e.g., `provider/model-id`).
+   - Verify `CLIENT_LLM_BASE_URL` is valid and points to API root, not endpoint path.
+
+3. **Slack step skipped**
+   - Ensure `SLACK_WEBHOOK_URL` repository secret is set.
+   - Confirm workflow run is not in fork-safety mode.
+
+4. **Need full debug details**
+   - Download workflow artifacts and inspect `opencode-debug.log` and `opencode-debug-fallback.log`.
+
+## 11) Security and Operational Notes
 
 - Secret redaction runs before PR comment/Slack output.
 - Fork PR detection prevents secret-dependent AI execution.

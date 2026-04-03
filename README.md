@@ -19,7 +19,8 @@ This repository contains a GitHub Actions workflow that automatically reviews pu
 ## Runtime Configuration
 
 - **Current workflow primary model**: `opencode/qwen3.6-plus-free`
-- **Optional provider fallback**: Groq (`@ai-sdk/openai-compatible`)
+- **Optional provider fallback**: `groq/openai/gpt-oss-20b` (via `@ai-sdk/openai-compatible`)
+- **Pinned OpenCode CLI version in workflow**: `opencode-ai@1.3.13`
 - **Agent**: Read-only PR reviewer (no code modifications)
 - **Triggers**: `opened`, `ready_for_review` events only
 
@@ -31,6 +32,13 @@ This repository contains a GitHub Actions workflow that automatically reviews pu
 4. Agent analyzes diff and generates review report
 5. Review findings are posted/updated as a single marker comment
 6. Slack summary is sent (if webhook configured)
+7. Review artifacts are uploaded (`pr-review.md`, `pr-review.raw.jsonl`, debug logs)
+
+### Workflow Guardrails
+
+- Fork PRs run in safe mode (secret-dependent AI execution is skipped)
+- PR size policy supports warn/skip thresholds (`PR_REVIEW_WARN_FILES`, `PR_REVIEW_SKIP_FILES`)
+- Review output is sanitized before PR comment and Slack notification
 
 ## Mock Files for Testing
 
@@ -73,10 +81,11 @@ Set in **Settings → Secrets and variables → Actions → Variables**:
 
 ## Testing This PR
 
-This PR includes the Phase 1 implementation. Expected workflow behavior:
-- ✅ Workflow should trigger on PR opened
-- ⚠️ OpenCode CLI installation may fail (if npm package doesn't exist yet)
-- ℹ️ Check Actions tab for detailed execution logs
+Expected workflow behavior:
+- ✅ Workflow triggers on PR opened / ready_for_review
+- ✅ PR comment is created/updated under the marker `<!-- ai-pr-review -->`
+- ✅ Slack summary sends when `SLACK_WEBHOOK_URL` is configured
+- ℹ️ Use Actions artifacts for execution logs and debug files
 
 ## Integration Guide
 
