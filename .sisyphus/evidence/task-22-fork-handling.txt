@@ -1,0 +1,22 @@
+
+.github\workflows\ai-pr-review.yml:18:      - name: Detect fork PR
+.github\workflows\ai-pr-review.yml:19:        id: fork_check
+.github\workflows\ai-pr-review.yml:22:          is_fork="false"
+.github\workflows\ai-pr-review.yml:23:          if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ] || [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+.github\workflows\ai-pr-review.yml:24:            is_fork="true"
+.github\workflows\ai-pr-review.yml:26:          echo "is_fork=${is_fork}" >> "$GITHUB_OUTPUT"
+.github\workflows\ai-pr-review.yml:66:        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.fork_check.outputs.is_fork != 'true' }}
+.github\workflows\ai-pr-review.yml:133:        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.fork_check.outputs.is_fork != 'true' && steps.run_review.outcome == 'success' }}
+.github\workflows\ai-pr-review.yml:186:          elif [ "${{ steps.fork_check.outputs.is_fork }}" = "true" ]; then
+.github\workflows\ai-pr-review.yml:187:            report_mode="fork_skip"
+.github\workflows\ai-pr-review.yml:226:          elif mode == "fork_skip":
+.github\workflows\ai-pr-review.yml:233:                - This PR originates from a fork repository.
+.github\workflows\ai-pr-review.yml:234:                - Repository secrets are unavailable for fork PRs in this workflow context.
+.github\workflows\ai-pr-review.yml:235:              - **Verdict**: Automated full review unavailable for fork PR; manual review required.
+.github\workflows\ai-pr-review.yml:238:              - None (fork safety mode)
+.github\workflows\ai-pr-review.yml:241:              - [ ] Fork PR detected; skipped secret-dependent AI review.
+.github\workflows\ai-pr-review.yml:244:              - PR metadata and fork detection policy.
+.github\workflows\ai-pr-review.yml:250:              - No secret-dependent operations were attempted for this fork PR.
+.github\workflows\ai-pr-review.yml:413:        if: ${{ always() && steps.fork_check.outputs.is_fork != 'true' }}
+.github\workflows\ai-pr-review.yml:425:        if: ${{ always() && steps.fork_check.outputs.is_fork != 'true' && steps.slack_check.outputs.has_slack == 'true' }}
+

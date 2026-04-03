@@ -1,0 +1,18 @@
+
+docs\setup-client-integration.md:5:- OpenAI-compatible custom LLM provider (custom `baseURL` + API key)
+docs\setup-client-integration.md:20:- OpenAI-compatible providers (e.g. Groq, internal client provider)
+docs\setup-client-integration.md:28:  "npm": "@ai-sdk/openai-compatible",
+docs\setup-client-integration.md:36:### 2.2 Client OpenAI-Compatible Provider (plug-and-play)
+docs\setup-client-integration.md:41:"client-openai-compatible": {
+docs\setup-client-integration.md:42:  "npm": "@ai-sdk/openai-compatible",
+docs\setup-client-integration.md:44:    "baseURL": "{env:CLIENT_LLM_BASE_URL}",
+docs\setup-client-integration.md:45:    "apiKey": "{env:CLIENT_LLM_API_KEY}"
+docs\setup-client-integration.md:56:opencode run --agent pr-reviewer --model client-openai-compatible/client-model ...
+docs\setup-client-integration.md:66:- `SLACK_WEBHOOK_URL` (for Slack notifications)
+docs\setup-client-integration.md:70:- `CLIENT_LLM_API_KEY`
+docs\setup-client-integration.md:81:- `PR_REVIEW_WARN_FILES` (default `20`)
+docs\setup-client-integration.md:82:- `PR_REVIEW_SKIP_FILES` (default `50`)
+docs\setup-client-integration.md:85:- `PR_REVIEW_WARN_FILES=30`
+docs\setup-client-integration.md:86:- `PR_REVIEW_SKIP_FILES=100`
+docs\setup-client-integration.md:92:3. Store as `SLACK_WEBHOOK_URL` repository secret
+

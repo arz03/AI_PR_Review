@@ -1,6 +1,6 @@
 # AI_PR_Review
 
-Automated AI-powered PR review bot using OpenCode with Groq inference.
+Automated AI-powered PR review bot using OpenCode, with Slack notifications and support for OpenAI-compatible custom providers.
 
 ## Overview
 
@@ -13,10 +13,13 @@ This repository contains a GitHub Actions workflow that automatically reviews pu
 - 🐛 **Logic Error Detection**: Finds boundary errors, missing validations, type issues
 - ⚡ **Performance Checks**: Identifies N+1 queries, inefficient loops, missing optimizations
 - 📊 **Analytics Focus**: Specialized for Data Science, AI, and Analytics pipeline code
+- 💬 **Slack Notifications**: Posts compact PR review summary to configured channel
+- 🧩 **Provider Flexibility**: Supports OpenAI-compatible providers via configurable `baseURL` + API key
 
-## Configuration
+## Runtime Configuration
 
-- **AI Model**: OpenAI GPT-OSS 120B via Groq
+- **Current workflow primary model**: `opencode/qwen3.6-plus-free`
+- **Optional provider fallback**: Groq (`@ai-sdk/openai-compatible`)
 - **Agent**: Read-only PR reviewer (no code modifications)
 - **Triggers**: `opened`, `ready_for_review` events only
 
@@ -26,7 +29,8 @@ This repository contains a GitHub Actions workflow that automatically reviews pu
 2. GitHub Actions workflow triggers
 3. OpenCode CLI runs the pr-reviewer agent
 4. Agent analyzes diff and generates review report
-5. Review findings are posted as PR comment
+5. Review findings are posted/updated as a single marker comment
+6. Slack summary is sent (if webhook configured)
 
 ## Mock Files for Testing
 
@@ -41,9 +45,16 @@ Total: **39 intentionally seeded issues** for AI detection testing.
 
 ## Setup Requirements
 
-1. Set `GROQ_API_KEY` in repository secrets
-2. Ensure GitHub Actions have PR write permissions
-3. OpenCode CLI will be installed automatically during workflow run
+1. Configure `SLACK_WEBHOOK_URL` in repository secrets
+2. Ensure GitHub Actions permissions include `pull-requests: write`
+3. (Optional) Configure provider secrets for non-default model routes (`GROQ_API_KEY`, `CLIENT_LLM_API_KEY`)
+4. OpenCode CLI is installed automatically during workflow run
+
+### Optional Variables (PR size policy)
+
+Set in **Settings → Secrets and variables → Actions → Variables**:
+- `PR_REVIEW_WARN_FILES` (default `20`)
+- `PR_REVIEW_SKIP_FILES` (default `50`)
 
 ## Repository Structure
 
@@ -67,10 +78,8 @@ This PR includes the Phase 1 implementation. Expected workflow behavior:
 - ⚠️ OpenCode CLI installation may fail (if npm package doesn't exist yet)
 - ℹ️ Check Actions tab for detailed execution logs
 
-## Development Status
+## Integration Guide
 
-- [x] Phase 1: Foundation (OpenCode config, agent skeleton, workflow, mock files)
-- [ ] Phase 2: Template refinement (schemas, templates, enhanced prompts)
-- [ ] Phase 3: Slack integration (webhook, summary extraction)
-- [ ] Phase 4: Polish & hardening (idempotent comments, error handling)
+For client rollout (including OpenAI-compatible internal provider setup, Slack setup, secrets, and validation), see:
 
+- `docs/setup-client-integration.md`

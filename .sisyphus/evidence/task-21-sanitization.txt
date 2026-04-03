@@ -1,0 +1,13 @@
+
+.github\workflows\ai-pr-review.yml:46:            size_note="⚠️ PR size is ${changed_files} files (>=${skip_threshold}). Full AI review skipped to avoid token/time explosion."
+.github\workflows\ai-pr-review.yml:70:          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+.github\workflows\ai-pr-review.yml:71:          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+.github\workflows\ai-pr-review.yml:286:      - name: Sanitize review output
+.github\workflows\ai-pr-review.yml:299:              (r"gsk_[A-Za-z0-9]{20,}", "[REDACTED_GROQ_KEY]"),
+.github\workflows\ai-pr-review.yml:300:              (r"sk-[A-Za-z0-9]{20,}", "[REDACTED_API_KEY]"),
+.github\workflows\ai-pr-review.yml:301:              (r"(?i)(api[_-]?key\s*[:=]\s*)(['\"]?)[^\s'\"]+", r"\1[REDACTED]"),
+.github\workflows\ai-pr-review.yml:302:              (r"(?i)(token\s*[:=]\s*)(['\"]?)[^\s'\"]+", r"\1[REDACTED]"),
+.github\workflows\ai-pr-review.yml:303:              (r"(?i)(password\s*[:=]\s*)(['\"]?)[^\s'\"]+", r"\1[REDACTED]"),
+.github\workflows\ai-pr-review.yml:304:              (r"(?i)(postgres(?:ql)?://[^:\s/]+:)[^@\s]+(@)", r"\1[REDACTED]\2"),
+.github\workflows\ai-pr-review.yml:319:          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

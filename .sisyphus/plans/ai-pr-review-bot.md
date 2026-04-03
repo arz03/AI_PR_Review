@@ -1514,6 +1514,7 @@ Wave FINAL (After ALL tasks):
     - Error message display
   - Document final configuration
   - Create setup guide for client
+  - Document OpenAI-compatible custom provider integration (custom `baseURL` + API key) for client internal LLM
 
   **Must NOT do**:
   - Skip any verification step
@@ -1540,6 +1541,7 @@ Wave FINAL (After ALL tasks):
   - [ ] No duplicate comments
   - [ ] Slack received summary
   - [ ] Setup guide created
+  - [ ] Setup guide includes OpenAI-compatible custom provider instructions
 
   **QA Scenarios (MANDATORY)**:
   ```

@@ -9,11 +9,24 @@
         "apiKey": "{env:GROQ_API_KEY}"
       },
       "models": {
-        "openai-gpt-oss-120b": {
+        "openai/gpt-oss-120b": {
           "name": "GPT-OSS 120B"
+        }
+      }
+    },
+    "client-openai-compatible": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Client OpenAI-Compatible Provider",
+      "options": {
+        "baseURL": "{env:CLIENT_LLM_BASE_URL}",
+        "apiKey": "{env:CLIENT_LLM_API_KEY}"
+      },
+      "models": {
+        "client-model": {
+          "name": "Client LLM Model"
         }
       }
     }
   },
-  "model": "groq/openai-gpt-oss-120b"
+  "model": "groq/openai/gpt-oss-120b"
 }

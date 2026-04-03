@@ -11,11 +11,20 @@ jobs:
       contents: read
       pull-requests: write
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       PR_REVIEW_WARN_FILES: ${{ vars.PR_REVIEW_WARN_FILES }}
       PR_REVIEW_SKIP_FILES: ${{ vars.PR_REVIEW_SKIP_FILES }}
 
     steps:
+      - name: Detect fork PR
+        id: fork_check
+        run: |
+          set -euo pipefail
+          is_fork="false"
+          if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ] || [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            is_fork="true"
+          fi
+          echo "is_fork=${is_fork}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout repository
         # v4.2.0
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
@@ -54,7 +63,7 @@ jobs:
 
       - name: Run PR review agent
         id: run_review
-        if: ${{ steps.pr_size.outputs.skip_review != 'true' }}
+        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.fork_check.outputs.is_fork != 'true' }}
         timeout-minutes: 7
         continue-on-error: true
         env:
@@ -121,7 +130,7 @@ jobs:
 
       - name: Build clean markdown report
         id: build_report
-        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.run_review.outcome == 'success' }}
+        if: ${{ steps.pr_size.outputs.skip_review != 'true' && steps.fork_check.outputs.is_fork != 'true' && steps.run_review.outcome == 'success' }}
         continue-on-error: true
         run: |
           python - <<'PY'
@@ -174,6 +183,8 @@ jobs:
           report_mode="none"
           if [ "${{ steps.pr_size.outputs.skip_review }}" = "true" ]; then
             report_mode="size_skip"
+          elif [ "${{ steps.fork_check.outputs.is_fork }}" = "true" ]; then
+            report_mode="fork_skip"
           elif [ "${{ steps.run_review.outcome }}" != "success" ] || [ "${{ steps.build_report.outcome }}" = "failure" ] || [ ! -s pr-review.md ]; then
             report_mode="exec_fallback"
           fi
@@ -212,6 +223,33 @@ jobs:
               - Automated review intentionally skipped at >=${{ steps.pr_size.outputs.skip_threshold }} changed files.
               """)
               Path("pr-review.md").write_text(report, encoding="utf-8")
+          elif mode == "fork_skip":
+              report = textwrap.dedent("""\
+              ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
+
+              ## Summary
+              - **Overall Risk**: 🟡 Medium
+              - **Key Themes**:
+                - This PR originates from a fork repository.
+                - Repository secrets are unavailable for fork PRs in this workflow context.
+              - **Verdict**: Automated full review unavailable for fork PR; manual review required.
+
+              ## Critical Findings (critical/high)
+              - None (fork safety mode)
+
+              ## Other Findings (medium/low/info)
+              - [ ] Fork PR detected; skipped secret-dependent AI review.
+
+              ## What Was Checked
+              - PR metadata and fork detection policy.
+
+              ## Reviewer Focus
+              - Perform manual review or run trusted internal mirror workflow.
+
+              ## Agent Notes
+              - No secret-dependent operations were attempted for this fork PR.
+              """)
+              Path("pr-review.md").write_text(report, encoding="utf-8")
           elif mode == "exec_fallback":
               report = textwrap.dedent("""\
               ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
@@ -244,6 +282,36 @@ jobs:
           if [ -n "${{ steps.pr_size.outputs.size_note }}" ]; then
             printf "\n## Size Policy Note\n- %s\n" "${{ steps.pr_size.outputs.size_note }}" >> pr-review.md
           fi
+
+      - name: Sanitize review output
+        if: ${{ always() }}
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          p = Path("pr-review.md")
+          if not p.exists():
+              raise SystemExit("pr-review.md not found for sanitization")
+
+          text = p.read_text(encoding="utf-8")
+          rules = [
+              (r"gsk_[A-Za-z0-9]{20,}", "[REDACTED_GROQ_KEY]"),
+              (r"sk-[A-Za-z0-9]{20,}", "[REDACTED_API_KEY]"),
+              (r"(?i)(api[_-]?key\s*[:=]\s*)(['\"]?)[^\s'\"]+", r"\1[REDACTED]"),
+              (r"(?i)(token\s*[:=]\s*)(['\"]?)[^\s'\"]+", r"\1[REDACTED]"),
+              (r"(?i)(password\s*[:=]\s*)(['\"]?)[^\s'\"]+", r"\1[REDACTED]"),
+              (r"(?i)(postgres(?:ql)?://[^:\s/]+:)[^@\s]+(@)", r"\1[REDACTED]\2"),
+          ]
+
+          total = 0
+          for pattern, repl in rules:
+              text, n = re.subn(pattern, repl, text)
+              total += n
+
+          p.write_text(text, encoding="utf-8")
+          print(f"Sanitization complete. Redactions applied: {total}")
+          PY
 
       - name: Post or update PR review comment
         if: ${{ always() }}
@@ -340,8 +408,21 @@ jobs:
               out.write("EOF\n")
           PY
 
+      - name: Detect Slack webhook availability
+        id: slack_check
+        if: ${{ always() && steps.fork_check.outputs.is_fork != 'true' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          has_slack="false"
+          if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+            has_slack="true"
+          fi
+          echo "has_slack=${has_slack}" >> "$GITHUB_OUTPUT"
+
       - name: Notify Slack
-        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+        if: ${{ always() && steps.fork_check.outputs.is_fork != 'true' && steps.slack_check.outputs.has_slack == 'true' }}
         # v2.1.1
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a
         with:
