@@ -165,59 +165,75 @@ jobs:
         run: |
           set -euo pipefail
 
+          report_mode="none"
           if [ "${{ steps.pr_size.outputs.skip_review }}" = "true" ]; then
-            cat > pr-review.md <<'REPORT'
-            ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
-
-            ## Summary
-            - **Overall Risk**: 🟡 Medium
-            - **Key Themes**:
-              - Review skipped due to PR size policy.
-              - Changed files: ${{ steps.pr_size.outputs.changed_files }}
-            - **Verdict**: Manual review required due to large PR size.
-
-            ## Critical Findings (critical/high)
-            - None (automated review skipped)
-
-            ## Other Findings (medium/low/info)
-            - [ ] PR exceeds automated review size threshold.
-
-            ## What Was Checked
-            - PR metadata and size policy gate.
-
-            ## Reviewer Focus
-            - Split PR into smaller chunks or provide targeted scope for review.
-
-            ## Agent Notes
-            - Automated review intentionally skipped at >=50 changed files.
-            REPORT
+            report_mode="size_skip"
           elif [ "${{ steps.run_review.outcome }}" != "success" ] || [ "${{ steps.build_report.outcome }}" = "failure" ] || [ ! -s pr-review.md ]; then
-            cat > pr-review.md <<'REPORT'
-            ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
-
-            ## Summary
-            - **Overall Risk**: 🟡 Medium
-            - **Key Themes**:
-              - Automated review was unavailable for this run.
-              - Fallback diagnostics were captured as workflow artifacts.
-            - **Verdict**: Manual review recommended for this run.
-
-            ## Critical Findings (critical/high)
-            - None (review execution failed)
-
-            ## Other Findings (medium/low/info)
-            - [ ] AI review unavailable due to transient execution error/timeout.
-
-            ## What Was Checked
-            - Workflow execution state and diagnostic logs.
-
-            ## Reviewer Focus
-            - Check artifacts: `opencode-debug.log`, `opencode-debug-fallback.log`, and rerun if needed.
-
-            ## Agent Notes
-            - No secrets are included in this fallback report.
-            REPORT
+            report_mode="exec_fallback"
           fi
+
+          REPORT_MODE="$report_mode" python - <<'PY'
+          import os
+          import textwrap
+          from pathlib import Path
+
+          mode = os.environ.get("REPORT_MODE", "none")
+
+          if mode == "size_skip":
+              report = textwrap.dedent("""\
+              ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
+
+              ## Summary
+              - **Overall Risk**: 🟡 Medium
+              - **Key Themes**:
+                - Review skipped due to PR size policy.
+                - Changed files: ${{ steps.pr_size.outputs.changed_files }}
+              - **Verdict**: Manual review required due to large PR size.
+
+              ## Critical Findings (critical/high)
+              - None (automated review skipped)
+
+              ## Other Findings (medium/low/info)
+              - [ ] PR exceeds automated review size threshold.
+
+              ## What Was Checked
+              - PR metadata and size policy gate.
+
+              ## Reviewer Focus
+              - Split PR into smaller chunks or provide targeted scope for review.
+
+              ## Agent Notes
+              - Automated review intentionally skipped at >=50 changed files.
+              """)
+              Path("pr-review.md").write_text(report, encoding="utf-8")
+          elif mode == "exec_fallback":
+              report = textwrap.dedent("""\
+              ## PR Review Report — PR #${{ github.event.pull_request.number }}: `${{ github.head_ref }}` → `${{ github.base_ref }}`
+
+              ## Summary
+              - **Overall Risk**: 🟡 Medium
+              - **Key Themes**:
+                - Automated review was unavailable for this run.
+                - Fallback diagnostics were captured as workflow artifacts.
+              - **Verdict**: Manual review recommended for this run.
+
+              ## Critical Findings (critical/high)
+              - None (review execution failed)
+
+              ## Other Findings (medium/low/info)
+              - [ ] AI review unavailable due to transient execution error/timeout.
+
+              ## What Was Checked
+              - Workflow execution state and diagnostic logs.
+
+              ## Reviewer Focus
+              - Check artifacts: `opencode-debug.log`, `opencode-debug-fallback.log`, and rerun if needed.
+
+              ## Agent Notes
+              - No secrets are included in this fallback report.
+              """)
+              Path("pr-review.md").write_text(report, encoding="utf-8")
+          PY
 
           if [ -n "${{ steps.pr_size.outputs.size_note }}" ]; then
             printf "\n## Size Policy Note\n- %s\n" "${{ steps.pr_size.outputs.size_note }}" >> pr-review.md
