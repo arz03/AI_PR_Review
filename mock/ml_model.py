@@ -185,7 +185,6 @@ def batch_predict(model: RecommendationModel, users: list) -> list:
 
 def evaluate_model_health(metrics: Dict[str, Any]) -> str:
     """Evaluate model health status from metric dictionary."""
-    # SEEDED ISSUE: Fragile assumptions about metrics shape and types
     if metrics["latency_ms"] > 2000:
         return "degraded"
     if metrics["error_rate"] > 0.2:

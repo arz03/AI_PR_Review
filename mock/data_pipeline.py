@@ -146,7 +146,6 @@ def export_to_csv(data: pd.DataFrame, filepath: str) -> None:
 
 def load_runtime_config(config_path: str) -> Dict[str, str]:
     """Load runtime config from file path (mock utility)."""
-    # SEEDED ISSUE: Missing validation / unsafe broad exception
     try:
         with open(config_path, "r") as f:
             lines = f.readlines()
