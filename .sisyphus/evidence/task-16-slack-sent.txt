@@ -1,0 +1,16 @@
+Workflow run URL: https://github.com/arz03/AI_PR_Review/actions/runs/23949980053/job/69854905256
+
+Validation summary:
+- Workflow completed successfully.
+- PR comment posted/updated.
+- Slack notification received in target channel.
+- Slack message includes PR URL, risk, findings counts, summary, and full review URL.
+
+Provided Slack message sample:
+🔎 AI PR Review — Test/ai pr review phase1 (idk)
+https://github.com/arz03/AI_PR_Review/pull/20
+
+Risk: 🟡 Medium
+Findings: Critical:1 • High:8 • Medium:10
+Summary: Solid Phase 1 scaffold; address security artifacts and permission contradictions before merging.
+Full review: https://github.com/arz03/AI_PR_Review/pull/20

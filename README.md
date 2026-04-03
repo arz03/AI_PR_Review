@@ -47,7 +47,7 @@ Total: **39 intentionally seeded issues** for AI detection testing.
 
 1. Configure `SLACK_WEBHOOK_URL` in repository secrets
 2. Ensure GitHub Actions permissions include `pull-requests: write`
-3. (Optional) Configure provider secrets for non-default model routes (`GROQ_API_KEY`, `CLIENT_LLM_API_KEY`)
+3. (Optional) Configure provider secrets/vars for non-default model routes (`GROQ_API_KEY`, `CLIENT_LLM_API_KEY`, `CLIENT_LLM_BASE_URL`)
 4. OpenCode CLI is installed automatically during workflow run
 
 ### Optional Variables (PR size policy)

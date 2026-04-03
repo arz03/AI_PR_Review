@@ -1,0 +1,13 @@
+E2E verification evidence (PR #22)
+
+Artifacts and observations:
+- PR review markdown generated and saved: docs/pr-reviews/pr-review.md
+- Single marker comment present in PR body output (`<!-- ai-pr-review -->`)
+- Slack notification delivered with summary, risk, and findings counts
+- Workflow includes graceful fallback paths, sanitization, and artifact upload
+
+Referenced workflow run:
+https://github.com/arz03/AI_PR_Review/actions/runs/23949980053/job/69854905256
+
+Referenced PR:
+https://github.com/arz03/AI_PR_Review/pull/22
