@@ -21,10 +21,9 @@ jobs:
         run: npm install -g opencode-ai
 
       - name: Run PR review agent
-        timeout-minutes: 8
+        timeout-minutes: 12
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX: "5000"
         run: |
           set -euo pipefail
           # Groq fallback (disabled for free-tier testing):
@@ -34,7 +33,7 @@ jobs:
             local out_file="$2"
             local log_file="$3"
 
-            timeout 180s opencode run --pure --print-logs --log-level INFO --agent pr-reviewer --model "$model" --format json "
+            timeout 360s opencode run --pure --print-logs --log-level INFO --agent pr-reviewer --model "$model" --format json "
           Review this pull request:
           - PR #${{ github.event.pull_request.number }}
           - URL: ${{ github.event.pull_request.html_url }}
@@ -42,9 +41,8 @@ jobs:
           - Head: ${{ github.head_ref }}
 
           Analyze the changes and provide a detailed code review following your configured review procedure.
-          Do not execute bash commands. Do not call gh.
-          Use only repository files already available in the workspace.
-          Keep output concise and complete in one pass.
+          You may use read-only bash commands (for PR diff/context) if needed.
+          Keep analysis focused on changed files and high-signal findings.
           Output only the final review report in markdown format.
             " > "$out_file" 2> "$log_file"
           }
