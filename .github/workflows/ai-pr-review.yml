@@ -328,13 +328,17 @@ jobs:
           comment_id=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" --paginate --jq '.[] | select(.user.login == "github-actions[bot]") | select(.body | contains("<!-- ai-pr-review -->")) | .id' | tail -n 1)
 
           if [ -n "$comment_id" ]; then
-            python - <<'PY'
-            import json
-            from pathlib import Path
-            body = Path("comment-body.md").read_text(encoding="utf-8")
-            Path("comment-payload.json").write_text(json.dumps({"body": body}), encoding="utf-8")
-            PY
+            python -c "import json,pathlib; body=pathlib.Path('comment-body.md').read_text(encoding='utf-8'); pathlib.Path('comment-payload.json').write_text(json.dumps({'body': body}), encoding='utf-8')"
+            set +e
             gh api "repos/${{ github.repository }}/issues/comments/${comment_id}" --method PATCH --input comment-payload.json
+            patch_code=$?
+            set -e
+            if [ "$patch_code" -ne 0 ]; then
+              echo "Marker comment update failed; creating fallback comment"
+              gh pr comment "${{ github.event.pull_request.number }}" \
+                --repo "${{ github.repository }}" \
+                --body-file comment-body.md
+            fi
           else
             gh pr comment "${{ github.event.pull_request.number }}" \
               --repo "${{ github.repository }}" \
