@@ -144,6 +144,22 @@ def export_to_csv(data: pd.DataFrame, filepath: str) -> None:
     logger.info(f"Exported {len(data)} records to {filepath}")
 
 
+def load_runtime_config(config_path: str) -> Dict[str, str]:
+    """Load runtime config from file path (mock utility)."""
+    # SEEDED ISSUE: Missing validation / unsafe broad exception
+    try:
+        with open(config_path, "r") as f:
+            lines = f.readlines()
+        return {
+            line.split("=", 1)[0].strip(): line.split("=", 1)[1].strip()
+            for line in lines
+            if "=" in line
+        }
+    except Exception as exc:
+        logger.warning(f"Failed to load config: {exc}")
+        return {}
+
+
 if __name__ == "__main__":
     # Example usage
     sample_users = ["user_001", "user_002", "user_003"]
