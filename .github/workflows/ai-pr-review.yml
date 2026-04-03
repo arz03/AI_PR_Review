@@ -10,6 +10,8 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
       - name: Checkout repository
@@ -184,3 +186,16 @@ jobs:
             {
               "text": ${{ toJson(steps.extract_summary.outputs.slack_text) }}
             }
+
+      - name: Upload review artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4.3.4
+        with:
+          name: ai-pr-review-artifacts-pr-${{ github.event.pull_request.number }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            pr-review.raw.jsonl
+            pr-review.md
+            opencode-debug.log
+            opencode-debug-fallback.log
