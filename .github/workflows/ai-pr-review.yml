@@ -12,6 +12,8 @@ jobs:
       pull-requests: write
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      PR_REVIEW_WARN_FILES: ${{ vars.PR_REVIEW_WARN_FILES }}
+      PR_REVIEW_SKIP_FILES: ${{ vars.PR_REVIEW_SKIP_FILES }}
 
     steps:
       - name: Checkout repository
@@ -25,19 +27,23 @@ jobs:
         run: |
           set -euo pipefail
           changed_files="${{ github.event.pull_request.changed_files }}"
+          warn_threshold="${PR_REVIEW_WARN_FILES:-20}"
+          skip_threshold="${PR_REVIEW_SKIP_FILES:-50}"
           skip_review="false"
           size_note=""
 
-          if [ "$changed_files" -ge 50 ]; then
+          if [ "$changed_files" -ge "$skip_threshold" ]; then
             skip_review="true"
-            size_note="⚠️ PR size is ${changed_files} files (>=50). Full AI review skipped to avoid token/time explosion."
-          elif [ "$changed_files" -ge 20 ]; then
-            size_note="⚠️ PR size is ${changed_files} files (>=20). Review quality may be reduced; prioritize critical findings."
+            size_note="⚠️ PR size is ${changed_files} files (>=${skip_threshold}). Full AI review skipped to avoid token/time explosion."
+          elif [ "$changed_files" -ge "$warn_threshold" ]; then
+            size_note="⚠️ PR size is ${changed_files} files (>=${warn_threshold}). Review quality may be reduced; prioritize critical findings."
           fi
 
           {
             echo "skip_review=${skip_review}"
             echo "changed_files=${changed_files}"
+            echo "warn_threshold=${warn_threshold}"
+            echo "skip_threshold=${skip_threshold}"
             echo "size_note<<EOF"
             echo "$size_note"
             echo "EOF"
@@ -203,7 +209,7 @@ jobs:
               - Split PR into smaller chunks or provide targeted scope for review.
 
               ## Agent Notes
-              - Automated review intentionally skipped at >=50 changed files.
+              - Automated review intentionally skipped at >=${{ steps.pr_size.outputs.skip_threshold }} changed files.
               """)
               Path("pr-review.md").write_text(report, encoding="utf-8")
           elif mode == "exec_fallback":
