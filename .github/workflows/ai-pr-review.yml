@@ -108,6 +108,14 @@ jobs:
           if not report:
               raise SystemExit("No markdown text output extracted from OpenCode JSON stream")
 
+          # Remove any non-report preface/thought lines before the first report heading.
+          heading_match = re.search(
+              r"(?m)^(#{1,3}\s*(PR\s+Review\s+Report|Summary|AI\s+PR\s+Review))\b",
+              report,
+          )
+          if heading_match:
+              report = report[heading_match.start():].lstrip()
+
           md_path.write_text(report + "\n", encoding="utf-8")
           PY
 
