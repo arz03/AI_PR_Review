@@ -79,7 +79,7 @@ Set in **Settings → Secrets and variables → Actions → Variables**:
 └── opencode.json              # OpenCode configuration
 ```
 
-## Testing This PR
+## Testing on a PR
 
 Expected workflow behavior:
 - ✅ Workflow triggers on PR opened / ready_for_review
