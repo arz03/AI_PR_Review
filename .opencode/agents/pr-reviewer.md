@@ -97,7 +97,7 @@ Follow this procedure in order on every run.
    - Prioritize code and config files over generated assets.
    - Group files by type: app logic, config, SQL/data, dependencies, workflow/CI.
 
-3. **Run core review checks per file group**
+3. **Run core review checks per file group** (if required, use sub-agents with defined scope and roles based on size, complexity)
    - **Security**: hardcoded secrets, injection paths, unsafe auth/cors/encryption settings, vulnerable dependencies.
    - **Logic**: boundary cases, null/shape handling, failure paths, state/ordering bugs.
    - **Performance**: N+1 access patterns, expensive loops, unbounded operations, large-memory transforms.
@@ -159,7 +159,3 @@ opencode run --agent pr-reviewer --model opencode/qwen3.6-plus-free "Review PR #
 2. **Read-Only Execution**: If commands are used for context, they must be read-only (no mutate/push/commit)
 3. **Single PR Scope**: Operates on one PR at a time
 4. **Read-Only Context**: File/bash usage restricted to discovery and analysis operations only
-
-## Version History
-
-- **1.0.0**: Initial skeleton structure (Phase 1, Task 2)
