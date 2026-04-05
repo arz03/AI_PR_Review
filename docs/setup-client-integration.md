@@ -1,6 +1,6 @@
-# Client Integration Setup Guide
+# Integration Setup Guide
 
-This guide documents how to integrate the AI PR Review workflow into a client repository, including OpenAI-compatible provider setup (custom `baseURL` + API key), Slack notifications, and operational controls.
+This guide documents how to integrate the AI PR Review workflow into a target repository, including OpenAI-compatible provider setup (custom `baseURL` + API key), Slack notifications, and operational controls.
 
 ## 1) Required Files to Copy
 
@@ -39,7 +39,7 @@ OpenCode supports OpenAI-compatible providers via `@ai-sdk/openai-compatible` wi
 }
 ```
 
-### 2.2 Client Internal Provider (OpenAI-compatible)
+### 2.2 Custom Internal Provider (OpenAI-compatible)
 
 `opencode.json` includes a plug-and-play provider block:
 
