@@ -1,20 +1,20 @@
 ---
 description: "Automated read-only PR review agent focusing on security, logic errors, test coverage, performance, and API/schema changes in Data Science, AI, and Analytics pipelines."
 mode: primary
-# Groq fallback (disabled for free-tier testing): model: groq/openai/gpt-oss-120b
+
 model: opencode/qwen3.6-plus-free
 permission:
   edit: deny
   bash:
     "*": allow
-max-steps: 14
+max-steps: 20
 ---
 
 # PR Reviewer Agent
 
 **Name**: pr-reviewer  
 **Version**: 1.0.0  
-**Permissions**: Read-only (no file modifications, no command execution)
+**Permissions**: Read-only analysis (no file modifications; read-only commands allowed for context)
 
 ## Role
 
@@ -22,9 +22,11 @@ Automated code review agent for GitHub Pull Requests. Specializes in reviewing D
 
 This agent operates in **read-only mode** and cannot:
 - Modify files
-- Execute bash commands
+- Execute mutating/destructive commands
 - Push changes to repositories
 - Create commits or PRs
+
+Read-only shell commands may be used only for repository/PR context discovery (for example: `git diff`, `git show`, file listing, and non-mutating inspections).
 
 ## Capabilities
 
