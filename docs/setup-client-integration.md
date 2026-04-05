@@ -33,6 +33,7 @@ OpenCode supports OpenAI-compatible providers via `@ai-sdk/openai-compatible` wi
     "apiKey": "{env:GROQ_API_KEY}"
   },
   "models": {
+    "openai/gpt-oss-20b": { "name": "GPT-OSS 20B" },
     "openai/gpt-oss-120b": { "name": "GPT-OSS 120B" }
   }
 }

@@ -6,6 +6,20 @@ Automated AI-powered PR review bot using OpenCode, with Slack notifications and 
 
 This repository contains a GitHub Actions workflow that automatically reviews pull requests using an AI agent. The bot analyzes code changes, detects security issues, logic errors, performance problems, and provides structured feedback.
 
+## Integration Guides (Start Here)
+
+For quick setup in another repository:
+
+- **Human setup guide**: [docs/setup-client-integration.md](docs/setup-client-integration.md)
+- **LLM Agent setup guide (Claude Code / AI coding agents)**: [docs/guide/installation.md](docs/guide/installation.md)
+
+This guide provides a deterministic, step-by-step setup flow including:
+- initial configuration questions to ask the user,
+- provider/model selection guardrails,
+- file copy checklist,
+- secrets/variables setup,
+- and a dry-run PR validation workflow.
+
 ## Features
 
 - 🤖 **Automated PR Review**: Triggers on PR creation and when marked ready for review
@@ -87,8 +101,3 @@ Expected workflow behavior:
 - ✅ Slack summary sends when `SLACK_WEBHOOK_URL` is configured
 - ℹ️ Use Actions artifacts for execution logs and debug files
 
-## Integration Guide
-
-For client rollout (including OpenAI-compatible internal provider setup, Slack setup, secrets, and validation), see:
-
-- `docs/setup-client-integration.md`
