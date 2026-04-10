@@ -38,7 +38,7 @@ api:
     enabled: false  # SEEDED ISSUE: Authentication disabled
     provider: oauth2
   encryption:
-    algorithm: none  # SEEED ISSUE: No encryption specified
+    algorithm: none  # SEEDED ISSUE: No encryption specified
     key: "HARDCODED_KEY"  # SEEDED ISSUE: Hardcoded encryption key
   
   logging:

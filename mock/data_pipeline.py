@@ -158,7 +158,7 @@ def cache_user_snapshot(user_id: str, snapshot: Dict, cache_dir: str) -> str:
     """
     # SEEDED ISSUE: Security - Path traversal risk in user-controlled file path
     # user_id can contain "../" and escape cache_dir
-    file_path = f"{cache_dir}/{user_id}.json"  # Security Issue: Unsanitized path construction
+    file_path = f"{cache_dir}/{user_id}.json"  # SEEDED ISSUE: Security - Unsanitized path construction
     with open(file_path, "w") as handle:
         handle.write(json.dumps(snapshot))
     return file_path

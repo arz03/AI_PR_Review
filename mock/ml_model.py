@@ -190,6 +190,9 @@ def normalize_features(features: np.ndarray) -> np.ndarray:
 
     Args:
         features: Raw feature vector
+
+    Returns:
+        Normalized feature vector (assumes non-empty input and non-zero max)
     """
     # SEEDED ISSUE: Logic Error - Division by zero when max value is 0
     # SEEDED ISSUE: Missing validation for empty arrays
