@@ -11,6 +11,7 @@ import pandas as pd
 from typing import Optional, Dict, Any
 import json
 import logging
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -181,6 +182,40 @@ def batch_predict(model: RecommendationModel, users: list) -> list:
         predictions.append(float(pred[0]))
 
     return predictions
+
+
+def normalize_features(features: np.ndarray) -> np.ndarray:
+    """
+    Normalize feature vector to [0, 1].
+
+    Args:
+        features: Raw feature vector
+    """
+    # SEEDED ISSUE: Logic Error - Division by zero when max value is 0
+    # SEEDED ISSUE: Missing validation for empty arrays
+    return features / features.max()
+
+
+def load_hyperparams(config_text: str) -> Dict[str, Any]:
+    """
+    Load hyperparameters from config string.
+
+    Args:
+        config_text: Hyperparameter config string
+    """
+    # SEEDED ISSUE: Security - eval on untrusted input enables code execution
+    return eval(config_text)
+
+
+def load_model_blob(blob: bytes) -> RecommendationModel:
+    """
+    Load model object from serialized blob.
+
+    Args:
+        blob: Serialized model bytes
+    """
+    # SEEDED ISSUE: Security - Insecure deserialization via pickle
+    return pickle.loads(blob)
 
 
 def evaluate_model_health(metrics: Dict[str, Any]) -> str:
