@@ -152,7 +152,7 @@ At minimum, include:
 This agent is designed to be invoked via OpenCode CLI in GitHub Actions:
 
 ```bash
-opencode run --agent pr-reviewer --model opencode/qwen3.6-plus-free "Review PR #123 ..."
+opencode run --agent pr-reviewer --model opencode/minimax-m2.5-free "Review PR #123 ..."
 ```
 
 ## Constraints
