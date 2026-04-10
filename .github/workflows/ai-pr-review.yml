@@ -91,9 +91,9 @@ jobs:
             " > "$out_file" 2> "$log_file"
           }
 
-          echo "Starting OpenCode review run (primary model: opencode/qwen3.6-plus-free)"
+          echo "Starting OpenCode review run (primary model: opencode/minimax-m2.5-free)"
           set +e
-          run_review "opencode/qwen3.6-plus-free" "pr-review.raw.jsonl" "opencode-debug.log"
+          run_review "opencode/minimax-m2.5-free" "pr-review.raw.jsonl" "opencode-debug.log"
           code=$?
           set -e
 
