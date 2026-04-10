@@ -80,7 +80,7 @@ The workflow chooses model in `run_review()` calls, not in docs commands.
 Current primary call:
 
 ```bash
-run_review "opencode/qwen3.6-plus-free" "pr-review.raw.jsonl" "opencode-debug.log"
+run_review "opencode/minimax-m2.5-free" "pr-review.raw.jsonl" "opencode-debug.log"
 ```
 
 To use client provider, update that line to:
