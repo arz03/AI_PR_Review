@@ -9,6 +9,9 @@ import pandas as pd
 import psycopg2
 from typing import List, Dict, Optional
 import logging
+import json
+import base64
+import pickle
 
 # Database configuration
 # SEEDED ISSUE: Security - Hardcoded credentials (should use environment variables)
@@ -142,6 +145,35 @@ def export_to_csv(data: pd.DataFrame, filepath: str) -> None:
     """
     data.to_csv(filepath, index=False)
     logger.info(f"Exported {len(data)} records to {filepath}")
+
+
+def cache_user_snapshot(user_id: str, snapshot: Dict, cache_dir: str) -> str:
+    """
+    Cache user snapshot to disk.
+
+    Args:
+        user_id: User identifier used in file name
+        snapshot: Snapshot payload
+        cache_dir: Directory to store cache files
+    """
+    # SEEDED ISSUE: Security - Path traversal risk in user-controlled file path
+    # user_id can contain "../" and escape cache_dir
+    file_path = f"{cache_dir}/{user_id}.json"  # SEEDED ISSUE: Security - Unsanitized path construction
+    with open(file_path, "w") as handle:
+        handle.write(json.dumps(snapshot))
+    return file_path
+
+
+def load_snapshot_blob(snapshot_blob: str) -> Dict:
+    """
+    Load snapshot from serialized blob.
+
+    Args:
+        snapshot_blob: Base64-encoded serialized snapshot
+    """
+    # SEEDED ISSUE: Security - Insecure deserialization of untrusted data
+    decoded = base64.b64decode(snapshot_blob)
+    return pickle.loads(decoded)  # Security Issue: arbitrary code execution risk
 
 
 def load_runtime_config(config_path: str) -> Dict[str, str]:

@@ -22,27 +22,30 @@ api:
   # SEEDED ISSUE: Missing required 'rate_limit' field
   api_key: "PLACEHOLDER_KEY_REPLACE_ME"  # SEEDED ISSUE: Sensitive key placeholder
   
-security:
-  cors:
-    enabled: true
-    allow_all_origins: true  # SEEDED ISSUE: Insecure CORS - allows all origins
-    allowed_methods:
-      - GET
-      - POST
-      - PUT
-      - DELETE
+  security:
+    cors:
+      enabled: true
+      allow_all_origins: true  # SEEDED ISSUE: Insecure CORS - allows all origins
+      allow_credentials: true  # SEEDED ISSUE: Credentials allowed with wildcard origins
+      allowed_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
       - PATCH
     expose_headers: true
   authentication:
     enabled: false  # SEEDED ISSUE: Authentication disabled
     provider: oauth2
   encryption:
-    algorithm: none  # SEEED ISSUE: No encryption specified
+    algorithm: none  # SEEDED ISSUE: No encryption specified
+    key: "HARDCODED_KEY"  # SEEDED ISSUE: Hardcoded encryption key
   
-logging:
-  level: DEBUG  # SEEDED ISSUE: Verbose logging in production
-  format: detailed
-  output: console
+  logging:
+    level: DEBUG  # SEEDED ISSUE: Verbose logging in production
+    format: detailed
+    output: console
+    include_pii: true  # SEEDED ISSUE: Logs may expose sensitive data
   
 features:
   cache_enabled: true

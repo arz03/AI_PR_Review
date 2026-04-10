@@ -42,12 +42,15 @@ SELECT
     um.daily_events,
     ua.total_events,
     ua.total_value,
+    -- SEEDED ISSUE: Divide by zero risk when total_events = 0
+    ua.total_value / ua.total_events as avg_value,
     -- SEEDED ISSUE: Missing aggregation on potentially ungrouped data
     '$report_type' as report_type  -- SEEDED ISSUE: Injection risk in result column
 FROM daily_metrics um
 LEFT JOIN user_activity ua ON um.user_id = ua.user_id
 WHERE um.daily_events > 0
-ORDER BY um.metric_date DESC, um.user_id ASC;
+-- SEEDED ISSUE: Performance - ORDER BY RANDOM() forces full sort
+ORDER BY RANDOM();
 
 -- SEEDED ISSUE: Query lacks proper WHERE clause for production environment
 -- SEEDED ISSUE: No query timeout specified

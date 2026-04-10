@@ -3,6 +3,10 @@
 # Python 3.9+ required
 # =====================================================
 
+# SEEDED ISSUE: Insecure package index over HTTP
+--index-url http://pypi.org/simple
+--trusted-host pypi.org
+
 # Web Framework
 flask  # SEEDED ISSUE: Unpinned version - should specify flask==3.0.0
 flask-cors  # SEEDED ISSUE: Unpinned version
