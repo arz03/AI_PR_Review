@@ -2,7 +2,7 @@
 description: "Automated read-only PR review agent focusing on security, logic errors, test coverage, performance, and API/schema changes in Data Science, AI, and Analytics pipelines."
 mode: primary
 
-model: opencode/qwen3.6-plus-free
+model: opencode/1minimax-m2.5-free
 permission:
   edit: deny
   bash:
