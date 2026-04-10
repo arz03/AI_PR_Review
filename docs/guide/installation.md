@@ -11,7 +11,7 @@ Goal: complete setup end-to-end with minimal ambiguity, then verify using a dry-
 Before copying or editing anything, the agent should ask the repo owner these decisions:
 
 1. **LLM route**
-   - Use default free route: `opencode/qwen3.6-plus-free`
+   - Use default free route: `opencode/minimax-m2.5-free`
    - Use Groq route (requires `GROQ_API_KEY`; recommended fallback is `groq/openai/gpt-oss-20b`)
    - Use custom OpenAI-compatible provider (requires `CLIENT_LLM_BASE_URL` + `CLIENT_LLM_API_KEY`)
 
@@ -36,8 +36,8 @@ Tool-calling support quality matters for this workflow.
 
 - Prefer models/routes known to reliably support tool use and multi-step instruction following.
 - Newer agents should **avoid weak tool-calling model choices** for production setup.
-- Strongly prefer models validated for tool-calling in your environment (for example GPT-OSS class routes and modern tool-capable models).
-- In this repo, default runtime is `opencode/qwen3.6-plus-free`; fallback route in workflow is `groq/openai/gpt-oss-20b`.
+- Strongly prefer models validated for tool-calling in your environment (for example GPT-codex class routes and modern tool-capable models).
+- In this repo, default runtime is `opencode/minimax-m2.5-free`; fallback route in workflow is `groq/openai/gpt-oss-20b`.
 
 > Practical warning: some older/open weights may run but behave poorly with tool calls and structured workflow instructions under load.
 
@@ -70,7 +70,7 @@ Reference: also see `docs/setup-client-integration.md` section **"1) Required Fi
 
 1. Open `opencode.json` and confirm provider blocks are present.
 2. Decide default model:
-   - Default free route: `opencode/qwen3.6-plus-free`
+   - Default free route: `opencode/minimax-m2.5-free`
    - Or change `model` to a selected provider route.
 3. In `.github/workflows/ai-pr-review.yml`, confirm `run_review` model route matches selected runtime strategy.
 
@@ -79,7 +79,7 @@ Deterministic check:
 - If you rename a model route, update both workflow and `opencode.json` in the same change.
 
 Current workflow baseline:
-- Primary: `opencode/qwen3.6-plus-free`
+- Primary: `opencode/minimax-m2.5-free`
 - Fallback (transient failures): `groq/openai/gpt-oss-20b`
 
 For custom provider route, use format similar to:
