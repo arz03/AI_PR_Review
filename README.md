@@ -32,7 +32,7 @@ This guide provides a deterministic, step-by-step setup flow including:
 
 ## Runtime Configuration
 
-- **Current workflow primary model**: `opencode/qwen3.6-plus-free`
+- **Current workflow primary model**: `opencode/minimax-m2.5-free`
 - **Optional provider fallback**: `groq/openai/gpt-oss-20b` (via `@ai-sdk/openai-compatible`)
 - **Pinned OpenCode CLI version in workflow**: `opencode-ai@1.3.13`
 - **Agent**: Read-only PR reviewer (no code modifications)
